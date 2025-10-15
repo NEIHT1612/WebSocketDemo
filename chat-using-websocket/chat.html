@@ -40,6 +40,7 @@
     const inputText = document.getElementById("inputText");
     let ws;
 
+    // check if browser supports WebSocket
     if (window.WebSocket === undefined) {
         console.log("Your browser does not support WebSockets")
     } else {
@@ -66,7 +67,7 @@
         msgWrapper.appendChild(pS);
         chat.appendChild(msgWrapper);
         chat.scrollTop = chat.scrollHeight;
-}
+        }
 
 
         // close socket
@@ -77,6 +78,7 @@
         return socket;
     }
 
+    //read input text and send to server
     inputText.addEventListener("keyup", (e) => {
     if (e.key === "Enter" && inputText.value.trim() !== "") {
         let msgWrapper = document.createElement("div");

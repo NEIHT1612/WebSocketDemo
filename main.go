@@ -48,24 +48,31 @@ func LoadPageChat(w http.ResponseWriter, r *http.Request) {
 func InitWebsocket(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	// get channel from query parameter
 	channel := r.URL.Query().Get("channel")
+
+	// check origin
 	if r.Header.Get("Origin") != "http://"+r.Host {
 		fmt.Fprintf(w, "%s", "error")
 		return
 	}
 
+	// if connection not exist, create new connection
 	if _, ok := mapWsConn[channel]; !ok {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			fmt.Fprintf(w, "%s", "error")
 			return
 		}
-
+		fmt.Println(conn)
 		mapWsConn[channel] = conn
 	}
 
+	// listen and read message from connection
 	for {
 		var msg map[string]string
+
+		// read message from connection
 		err := mapWsConn[channel].ReadJSON(&msg)
 		if err != nil {
 			fmt.Println("Error reading JSON: ", err)
@@ -73,11 +80,13 @@ func InitWebsocket(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Printf("Received: %s\n", msg)
 
+		// find other connection in mapWsConn
 		otherConn := getConn(channel)
 		if otherConn == nil {
 			continue
 		}
 
+		// send message to other connection
 		err = otherConn.WriteJSON(msg)
 		if err != nil {
 			fmt.Println("Error writing JSON: ", err)
